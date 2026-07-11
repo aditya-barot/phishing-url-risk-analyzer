@@ -3,13 +3,34 @@
 > **Status: 🟡 Early setup (Milestone 0 complete).** Project scaffolding and
 > environment are in place. Application logic is not implemented yet.
 
-A defensive cybersecurity tool that analyzes a URL and returns an **explainable,
-URL-based risk assessment** — classifying it as *low risk*, *suspicious*, or
-*likely phishing* using transparent, rule-based indicators.
+with:
 
-This project is being built incrementally as a public portfolio piece. Each
-milestone is committed separately to keep the history readable and honest about
-what does and doesn't work yet.
+> **Status: 🟢 Milestone 1 complete.** The tool can now safely parse URL
+> strings into structured components. Risk scoring and UI are not built yet.
+
+(b) Add a Current functionality section immediately after the Motivation section:
+
+## Current functionality
+
+As of Milestone 1, the project can **safely parse a raw URL string into
+structured components** using Python's standard library and `tldextract`.
+
+Given a URL, `parse_url()` returns fields such as the scheme, hostname, port,
+path, query, fragment, and the extracted `subdomain`, `domain`, `suffix`, and
+`registered_domain`, along with basic validity flags and a `parse_error`
+message for bad input.
+
+Parsing is **fully static**: the tool does not fetch, visit, resolve, or
+otherwise interact with any URL or host. Risk scoring and the user interface
+are not implemented yet.
+
+(c) In the Roadmap table, change the Milestone 1 row from:
+
+| 1         | Safe URL parsing into structured components       | ⏳ Planned     |
+
+to:
+
+| 1         | Safe URL parsing into structured components       | ✅ Complete    |
 
 ---
 
