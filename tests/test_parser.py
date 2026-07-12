@@ -71,6 +71,7 @@ def test_malformed_input():
     assert result["is_valid_basic_url"] is False
     assert result["hostname"] is None
 
+
 def test_ip_address_hostname_is_structurally_valid():
     result = parse_url("http://192.168.1.1/login")
 
