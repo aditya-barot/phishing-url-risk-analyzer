@@ -1,16 +1,16 @@
 # Phishing URL Risk Analyzer
 
-> **Status: 🟢 Milestone 3 complete.** The tool can now parse URLs, extract
-> static indicators, and produce an explainable rule-based risk score from
-> Python. A web UI is not built yet.
+> **Status: 🟢 Milestone 4 complete.** The tool now has a local Streamlit UI on
+> top of the explainable rule-based scoring engine. It is demo-ready locally
+> and not deployed.
 
 A defensive cybersecurity tool that analyzes a URL and returns an **explainable,
-URL-based risk assessment** — classifying it as *low risk*, *suspicious*, or
-*likely phishing* using transparent, rule-based indicators.
+URL-based risk assessment** — classifying it as *low risk*, *suspicious*,
+*likely phishing*, or *invalid* using transparent, rule-based indicators.
 
 This project is being built incrementally as a public portfolio piece. Each
 milestone is committed separately to keep the history readable and honest about
-what does and doesn't work yet.
+what does and does not work yet.
 
 ---
 
@@ -57,8 +57,14 @@ explanation. There is **no machine learning** and still **no network activity**:
 every point is traceable to a documented rule. Blank or invalid input is reported
 as `Invalid URL`, never as phishing.
 
-The tool is currently usable from Python code. A Streamlit web interface is
-planned next.
+As of Milestone 4, the project includes a local **Streamlit web interface**
+through `app.py`. A user can enter a URL, click **Analyze URL**, and view the
+risk label, risk score, recommendation, triggered indicators, parsed URL
+details, and extracted static features.
+
+The UI runs locally and performs the same static analysis as the Python scoring
+function. It does not fetch, visit, resolve, scrape, or externally validate the
+URL.
 
 ## Implemented features
 
@@ -67,16 +73,19 @@ planned next.
 - [x] Compute a transparent, weighted risk score
 - [x] Produce human-readable explanations for triggered indicators
 - [x] Classify URLs as `Low Risk`, `Suspicious`, `Likely Phishing`, or `Invalid URL`
+- [x] Provide safety recommendations based on the risk label
+- [x] Display results through a local Streamlit interface
+- [x] Show parsed URL details and extracted features in expandable UI sections
 - [x] Unit tests covering parsing, feature extraction, and scoring
 
 ## Planned features
 
-- [ ] Interactive Streamlit UI for entering a URL and viewing results
-- [ ] Example inputs and outputs in the README
-- [ ] Final documentation polish with screenshots
+- [ ] Add real screenshots to the README
+- [ ] Add example inputs and outputs
+- [ ] Final documentation polish
 - [ ] Optional design notes explaining scoring rules and limitations
 
-## Planned tech stack
+## Tech stack
 
 | Area              | Tool                                  |
 | ----------------- | ------------------------------------- |
@@ -92,6 +101,7 @@ planned next.
 
 ```text
 phishing-url-risk-analyzer/
+├── app.py                     # Local Streamlit UI
 ├── src/
 │   └── phishing_url_analyzer/
 │       ├── parser.py          # Safe URL parsing logic
@@ -128,6 +138,22 @@ pip install -r requirements.txt
 pytest
 ```
 
+## Run the local app
+
+```bash
+# From the project root, with the virtual environment active
+streamlit run app.py
+```
+
+Streamlit will open the app in your browser, usually at:
+
+```text
+http://localhost:8501
+```
+
+The app runs locally and does not fetch, visit, resolve, scrape, or externally
+validate the URL being analyzed.
+
 ## Usage from Python
 
 ```python
@@ -161,7 +187,7 @@ for indicator in result["triggered_indicators"]:
 | 1         | Safe URL parsing into structured components      | ✅ Complete    |
 | 2         | URL feature / indicator extraction               | ✅ Complete    |
 | 3         | Explainable, weighted risk scoring               | ✅ Complete    |
-| 4         | Streamlit UI                                     | ⏳ Planned     |
+| 4         | Streamlit UI                                     | ✅ Complete    |
 | 5         | Test suite and documentation polish              | ⏳ Planned     |
 
 ## Disclaimer
