@@ -1,8 +1,8 @@
 # Phishing URL Risk Analyzer
 
-> **Status: 🟢 Milestone 2 complete.** The tool can now parse URLs and extract
-> static, security-relevant indicators from them. Risk scoring and UI are not
-> built yet.
+> **Status: 🟢 Milestone 3 complete.** The tool can now parse URLs, extract
+> static indicators, and produce an explainable rule-based risk score from
+> Python. A web UI is not built yet.
 
 A defensive cybersecurity tool that analyzes a URL and returns an **explainable,
 URL-based risk assessment** — classifying it as *low risk*, *suspicious*, or
@@ -47,22 +47,34 @@ Character counts are based on the user's original input, not the normalized URL.
 Extraction remains **fully static**: the tool does not fetch, visit, resolve,
 scrape, or otherwise interact with any URL or host.
 
-Risk scoring, final classification, and the Streamlit user interface are not
-implemented yet.
+As of Milestone 3, the tool can also **produce an explainable risk score** via
+`score_url()`. It applies a transparent, rule-based system to the extracted
+features and returns a numeric `risk_score` from 0 to 100, a `risk_label`,
+a list of `triggered_indicators`, and a safety `recommendation`.
+
+Each triggered indicator includes its name, point value, and a plain-language
+explanation. There is **no machine learning** and still **no network activity**:
+every point is traceable to a documented rule. Blank or invalid input is reported
+as `Invalid URL`, never as phishing.
+
+The tool is currently usable from Python code. A Streamlit web interface is
+planned next.
 
 ## Implemented features
 
 - [x] Accept a URL and safely parse it into structured components
 - [x] Extract URL-based static indicators
-- [x] Unit tests covering parsing and feature extraction
+- [x] Compute a transparent, weighted risk score
+- [x] Produce human-readable explanations for triggered indicators
+- [x] Classify URLs as `Low Risk`, `Suspicious`, `Likely Phishing`, or `Invalid URL`
+- [x] Unit tests covering parsing, feature extraction, and scoring
 
 ## Planned features
 
-- [ ] Compute a transparent, weighted risk score
-- [ ] Produce a human-readable explanation for each contributing signal
-- [ ] Classify the URL as *low risk*, *suspicious*, or *likely phishing*
 - [ ] Interactive Streamlit UI for entering a URL and viewing results
-- [ ] Final documentation polish with screenshots and example outputs
+- [ ] Example inputs and outputs in the README
+- [ ] Final documentation polish with screenshots
+- [ ] Optional design notes explaining scoring rules and limitations
 
 ## Planned tech stack
 
@@ -71,6 +83,7 @@ implemented yet.
 | Language          | Python 3.11+                          |
 | URL parsing       | `urllib` standard library             |
 | Domain parsing    | `tldextract`                          |
+| Scoring           | Rule-based Python logic               |
 | UI                | `streamlit`                           |
 | Testing           | `pytest`                              |
 | Version control   | Git + GitHub                          |
@@ -82,10 +95,12 @@ phishing-url-risk-analyzer/
 ├── src/
 │   └── phishing_url_analyzer/
 │       ├── parser.py          # Safe URL parsing logic
-│       └── features.py        # Static URL indicator extraction
+│       ├── features.py        # Static URL indicator extraction
+│       └── scorer.py          # Explainable rule-based risk scoring
 ├── tests/
 │   ├── test_parser.py         # Parser unit tests
-│   └── test_features.py       # Feature extraction unit tests
+│   ├── test_features.py       # Feature extraction unit tests
+│   └── test_scorer.py         # Scoring engine unit tests
 ├── data/                      # Sample/reference data
 ├── screenshots/               # UI screenshots for the README, added later
 ├── docs/                      # Design notes and documentation
@@ -113,6 +128,31 @@ pip install -r requirements.txt
 pytest
 ```
 
+## Usage from Python
+
+```python
+from phishing_url_analyzer.scorer import score_url
+
+result = score_url("http://secure-login.example.com/verify-account")
+
+print(result["risk_score"])
+print(result["risk_label"])
+print(result["recommendation"])
+
+for indicator in result["triggered_indicators"]:
+    print(indicator["name"], indicator["points"])
+    print(indicator["explanation"])
+```
+
+## Risk labels
+
+| Label              | Score range | Meaning |
+| ------------------ | ----------- | ------- |
+| `Invalid URL`      | N/A         | Input could not be parsed as a usable URL or domain |
+| `Low Risk`         | 0–24        | Few or no suspicious URL-based indicators detected |
+| `Suspicious`       | 25–59       | Multiple warning signs detected; user should verify carefully |
+| `Likely Phishing`  | 60–100      | Strong phishing-style indicators detected |
+
 ## Roadmap
 
 | Milestone | Goal                                             | Status         |
@@ -120,7 +160,7 @@ pytest
 | 0         | Project setup, structure, and documentation      | ✅ Complete    |
 | 1         | Safe URL parsing into structured components      | ✅ Complete    |
 | 2         | URL feature / indicator extraction               | ✅ Complete    |
-| 3         | Explainable, weighted risk scoring               | ⏳ Planned     |
+| 3         | Explainable, weighted risk scoring               | ✅ Complete    |
 | 4         | Streamlit UI                                     | ⏳ Planned     |
 | 5         | Test suite and documentation polish              | ⏳ Planned     |
 
@@ -130,6 +170,10 @@ This tool is for **educational and defensive** purposes only. It performs static
 analysis of URL strings and does not fetch, visit, resolve, scrape, or interact
 with any URL. It provides heuristic guidance and should not be relied upon as
 the sole basis for security decisions.
+
+A low-risk result does not guarantee that a website is safe. A high-risk result
+does not prove that a website is malicious. The output should be treated as
+URL-based guidance only.
 
 ## License
 
