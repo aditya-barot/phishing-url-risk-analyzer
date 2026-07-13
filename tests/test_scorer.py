@@ -126,3 +126,11 @@ def test_invalid_hostless_url():
     assert result["risk_label"] == "Invalid URL"
     assert result["risk_score"] == 0
     assert result["triggered_indicators"] == []
+
+
+def test_junk_input_returns_invalid_url():
+    result = score_url("!!!")
+
+    assert result["risk_label"] == "Invalid URL"
+    assert result["risk_score"] == 0
+    assert result["triggered_indicators"] == []

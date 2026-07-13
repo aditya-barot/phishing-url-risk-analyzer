@@ -8,6 +8,7 @@ no DNS lookups, no browser activity.
 
 from __future__ import annotations
 
+import ipaddress
 import re
 from urllib.parse import urlparse
 
@@ -18,6 +19,10 @@ import tldextract
 # because inputs like "example.com:8080/path" would otherwise be misread as
 # using a "example.com" scheme.
 _SCHEME_RE = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.\-]*://")
+
+# Matches a single valid hostname label: 1–63 characters of letters, digits,
+# or hyphens, not beginning or ending with a hyphen.
+_HOSTNAME_LABEL_RE = re.compile(r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$")
 
 # Applied only so urllib can parse scheme-less input like "example.com".
 # This is a parsing convenience; it does not imply the URL uses HTTP.
@@ -49,6 +54,41 @@ def _empty_result(url: str) -> dict:
         "is_valid_basic_url": False,
         "parse_error": None,
     }
+
+
+def _is_valid_hostname(hostname: str) -> bool:
+    """Return True if the hostname is syntactically valid. Performs no I/O.
+
+    A valid hostname is one of:
+      * a literal IPv4 or IPv6 address,
+      * localhost,
+      * a syntactically valid *.localhost name, or
+      * one or more dot-separated labels where each label is 1–63 characters,
+        contains only letters, digits, or hyphens, and does not start or end
+        with a hyphen.
+
+    This is a syntax check only — it never resolves the host or touches the
+    network.
+    """
+    if not hostname:
+        return False
+
+    try:
+        ipaddress.ip_address(hostname)
+        return True
+    except ValueError:
+        pass
+
+    host = hostname.lower()
+    labels = host.split(".")
+
+    if host == "localhost":
+        return True
+
+    if host.endswith(".localhost"):
+        return all(_HOSTNAME_LABEL_RE.match(label) for label in labels[:-1])
+
+    return all(_HOSTNAME_LABEL_RE.match(label) for label in labels)
 
 
 def parse_url(url: str) -> dict:
@@ -113,11 +153,17 @@ def parse_url(url: str) -> dict:
     result["suffix"] = ext.suffix
     result["registered_domain"] = ext.top_domain_under_public_suffix
 
-    # "Basic" validity: parsing succeeded and a hostname is present. This is a
-    # deliberately permissive structural check — IP-address hosts, localhost,
-    # and internal hostnames are all considered valid here. Whether such hosts
-    # are *risky* is a separate concern handled by later milestones; the
-    # public-suffix / registered-domain fields above remain available for that.
+    # Reject hostnames that parsed into a value but are not syntactically valid
+    # (e.g. "!!!"), so that obviously junk input is not treated as valid.
+    if result["hostname"] and not _is_valid_hostname(result["hostname"]):
+        if result["parse_error"] is None:
+            result["parse_error"] = "Invalid hostname syntax."
+
+    # "Basic" validity: parsing succeeded (no parse_error) and a hostname is
+    # present. Hosts that fail the syntax check above are excluded via the
+    # parse_error set there. IP-address hosts, localhost, and internal
+    # hostnames all remain valid. Whether such hosts are *risky* is handled by
+    # later stages.
     result["is_valid_basic_url"] = bool(
         result["parse_error"] is None
         and result["hostname"]

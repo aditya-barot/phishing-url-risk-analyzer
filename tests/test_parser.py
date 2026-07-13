@@ -87,3 +87,11 @@ def test_localhost_is_structurally_valid():
     assert result["port"] == 8000
     assert result["is_valid_basic_url"] is True
     assert result["registered_domain"] == ""
+
+
+def test_invalid_hostname_syntax():
+    # Junk input parses into a "hostname" but is not valid syntax.
+    result = parse_url("!!!")
+
+    assert result["is_valid_basic_url"] is False
+    assert result["parse_error"] == "Invalid hostname syntax."
