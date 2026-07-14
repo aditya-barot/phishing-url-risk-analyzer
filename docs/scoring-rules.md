@@ -28,7 +28,7 @@ input is **never** scored or labelled as phishing.
 | --------- | --------- | ------ |
 | Missing HTTPS | scheme is not `https` | +10 |
 | IP address used as hostname | host is a literal IPv4/IPv6 address | +25 |
-| localhost / internal hostname | host is `localhost` or `*.localhost` | +10 |
+| localhost / `*.localhost` hostname | host is `localhost` or `*.localhost` | +10 |
 | Explicit port | a port is present in the URL | +8 |
 | `@` symbol in URL | URL contains `@` | +25 |
 | Suspicious keyword(s) | each unique keyword found | +8 each, capped at +24 |

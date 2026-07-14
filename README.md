@@ -27,10 +27,8 @@ structural warning signs commonly associated with phishing links.
 
 ## Screenshots
 
-> 📸 **Add real screenshots before publishing.** Capture them by running the app
-> (`streamlit run app.py`) and save them to the `screenshots/` folder using the
-> exact filenames below. Until you add the files, these image links will not
-> render on GitHub. Do **not** commit placeholder or fabricated images.
+The screenshots below show the local Streamlit interface using real example
+inputs.
 
 **Low-risk result**
 
@@ -84,7 +82,7 @@ resolving, or scraping of URLs occurs at any layer.
 | Testing           | `pytest`                              |
 | Version control   | Git + GitHub                          |
 
-No machine learning, no external APIs, no network dependencies at runtime.
+No machine learning and no external APIs are used for URL analysis.
 
 ## Project structure
 
@@ -118,7 +116,7 @@ phishing-url-risk-analyzer/
 
 ```bash
 # Clone
-git clone https://github.com/<your-username>/phishing-url-risk-analyzer.git
+git clone https://github.com/<aditya-barot>/phishing-url-risk-analyzer.git
 cd phishing-url-risk-analyzer
 
 # Create and activate a virtual environment
@@ -137,8 +135,8 @@ streamlit run app.py
 ```
 
 Streamlit opens the app in your browser (default: http://localhost:8501). Enter
-a URL, click **Analyze URL**, and review the result. The app runs entirely
-locally and makes no outbound network requests.
+a URL, click **Analyze URL**, and review the result. The analysis runs locally
+and never fetches, visits, resolves, or externally validates the submitted URL.
 
 ## Usage from Python
 
@@ -196,7 +194,7 @@ Indicator weights (each traceable in `scorer.py`):
 | --------- | ------ |
 | Missing HTTPS | +10 |
 | IP address used as hostname | +25 |
-| localhost / internal-style hostname | +10 |
+| localhost / `*.localhost` hostname | +10 |
 | Explicit port | +8 |
 | `@` symbol in URL | +25 |
 | Suspicious keyword | +8 each, capped at +24 |
