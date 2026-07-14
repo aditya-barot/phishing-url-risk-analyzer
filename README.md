@@ -1,205 +1,263 @@
-# Phishing URL Risk Analyzer
+# 🛡️ Phishing URL Risk Analyzer
 
-> **Status: 🟢 Milestone 4 complete.** The tool now has a local Streamlit UI on
-> top of the explainable rule-based scoring engine. It is demo-ready locally
-> and not deployed.
+> **Status: ✅ All milestones complete (0–5).** A local, explainable, rule-based
+> tool for assessing the risk of a URL from its structure alone. Runs locally
+> via a Streamlit UI or from Python. Not deployed.
 
-A defensive cybersecurity tool that analyzes a URL and returns an **explainable,
-URL-based risk assessment** — classifying it as *low risk*, *suspicious*,
-*likely phishing*, or *invalid* using transparent, rule-based indicators.
+A defensive cybersecurity tool that analyzes a URL string and returns an
+**explainable, URL-based risk assessment** — classifying it as *Low Risk*,
+*Suspicious*, or *Likely Phishing* using transparent, rule-based indicators.
 
-This project is being built incrementally as a public portfolio piece. Each
-milestone is committed separately to keep the history readable and honest about
-what does and does not work yet.
+Every point in the score is traceable to a documented rule with a plain-language
+explanation, so the result is auditable rather than a black box.
 
 ---
 
-## Motivation
+## What this tool is (and is not)
 
-Phishing remains one of the most common initial-access techniques in real-world
-attacks. Many URL indicators of phishing are visible **before** a page is ever
-loaded — suspicious character patterns, misleading subdomains, IP-address hosts,
-excessive length, and lookalike domains, among others.
+**It is:** a static analyzer of URL *strings*. It inspects the text of a URL —
+scheme, hostname, subdomains, characters, keywords, length — and applies
+transparent heuristics.
 
-This tool focuses on those **static, URL-only signals**. It is intended as a
-learning and demonstration project for URL analysis and explainable risk
-scoring — not as a replacement for enterprise email security or threat
-intelligence feeds.
+**It is not:** a live scanner, a threat-intelligence feed, or a machine-learning
+classifier. It **does not fetch, visit, resolve, or scrape** any URL, and it
+performs **no DNS lookups or network requests** of any kind. It **cannot
+determine whether a website is actually safe or malicious** — it only flags
+structural warning signs commonly associated with phishing links.
+
+## Screenshots
+
+> 📸 **Add real screenshots before publishing.** Capture them by running the app
+> (`streamlit run app.py`) and save them to the `screenshots/` folder using the
+> exact filenames below. Until you add the files, these image links will not
+> render on GitHub. Do **not** commit placeholder or fabricated images.
+
+**Low-risk result**
+
+![Low-risk analysis result](screenshots/app-low-risk.png)
+
+**Likely-phishing result**
+
+![Likely-phishing analysis result](screenshots/app-likely-phishing.png)
+
+**Invalid URL**
+
+![Invalid URL message](screenshots/app-invalid-url.png)
 
 ## Current functionality
 
-As of Milestone 1, the project can **safely parse a raw URL string into
-structured components** using Python's standard library and `tldextract`.
+The tool can, entirely offline:
 
-Given a URL, `parse_url()` returns fields such as the scheme, hostname, port,
-path, query, fragment, and the extracted `subdomain`, `domain`, `suffix`, and
-`registered_domain`, along with basic validity flags and a `parse_error`
-message for bad input.
+1. **Safely parse** a raw URL string into structured components (`parse_url`).
+2. **Extract static indicators** from the parsed result (`extract_features`) —
+   lengths, character counts, subdomain count, IP/localhost hosts, ports,
+   queries, fragments, `@` symbols, and suspicious keywords.
+3. **Produce an explainable risk score** (`score_url`) — a numeric score, a
+   risk label, the triggered indicators (each with points and an explanation),
+   and a safety recommendation.
+4. **Present results in a local Streamlit UI** (`app.py`).
 
-As of Milestone 2, the project can also **extract static URL indicators** from
-the parsed result via `extract_features()`. These include URL and hostname
-length, path and query length, dot count, hyphen count, digit count,
-special-character count, subdomain count, IP-address or localhost hosts,
-presence of a port, query or fragment, an `@` symbol, and matches against a
-small, documented list of suspicious keywords.
-
-Character counts are based on the user's original input, not the normalized URL.
-Extraction remains **fully static**: the tool does not fetch, visit, resolve,
-scrape, or otherwise interact with any URL or host.
-
-As of Milestone 3, the tool can also **produce an explainable risk score** via
-`score_url()`. It applies a transparent, rule-based system to the extracted
-features and returns a numeric `risk_score` from 0 to 100, a `risk_label`,
-a list of `triggered_indicators`, and a safety `recommendation`.
-
-Each triggered indicator includes its name, point value, and a plain-language
-explanation. There is **no machine learning** and still **no network activity**:
-every point is traceable to a documented rule. Blank or invalid input is reported
-as `Invalid URL`, never as phishing.
-
-As of Milestone 4, the project includes a local **Streamlit web interface**
-through `app.py`. A user can enter a URL, click **Analyze URL**, and view the
-risk label, risk score, recommendation, triggered indicators, parsed URL
-details, and extracted static features.
-
-The UI runs locally and performs the same static analysis as the Python scoring
-function. It does not fetch, visit, resolve, scrape, or externally validate the
-URL.
+All analysis is **static string analysis only**. No fetching, visiting,
+resolving, or scraping of URLs occurs at any layer.
 
 ## Implemented features
 
-- [x] Accept a URL and safely parse it into structured components
-- [x] Extract URL-based static indicators
-- [x] Compute a transparent, weighted risk score
-- [x] Produce human-readable explanations for triggered indicators
-- [x] Classify URLs as `Low Risk`, `Suspicious`, `Likely Phishing`, or `Invalid URL`
-- [x] Provide safety recommendations based on the risk label
-- [x] Display results through a local Streamlit interface
-- [x] Show parsed URL details and extracted features in expandable UI sections
-- [x] Unit tests covering parsing, feature extraction, and scoring
-
-## Planned features
-
-- [ ] Add real screenshots to the README
-- [ ] Add example inputs and outputs
-- [ ] Final documentation polish
-- [ ] Optional design notes explaining scoring rules and limitations
+- [x] Safe, offline URL parsing into structured components
+- [x] Hostname syntax validation (IP / `localhost` / valid domain labels)
+- [x] Static URL indicator extraction
+- [x] Transparent, weighted, rule-based risk scoring (capped at 100)
+- [x] Human-readable explanation for every triggered indicator
+- [x] Risk classification: *Low Risk*, *Suspicious*, *Likely Phishing*, *Invalid URL*
+- [x] Safety recommendation per result
+- [x] Local Streamlit web interface
+- [x] Unit test suite (39 tests)
 
 ## Tech stack
 
 | Area              | Tool                                  |
 | ----------------- | ------------------------------------- |
 | Language          | Python 3.11+                          |
-| URL parsing       | `urllib` standard library             |
+| URL parsing       | `urllib` (standard library)           |
 | Domain parsing    | `tldextract`                          |
-| Scoring           | Rule-based Python logic               |
+| Hostname / IP     | `ipaddress`, `re` (standard library)  |
 | UI                | `streamlit`                           |
 | Testing           | `pytest`                              |
 | Version control   | Git + GitHub                          |
+
+No machine learning, no external APIs, no network dependencies at runtime.
 
 ## Project structure
 
 ```text
 phishing-url-risk-analyzer/
-├── app.py                     # Local Streamlit UI
+├── app.py                          # Streamlit UI (entry point)
 ├── src/
 │   └── phishing_url_analyzer/
-│       ├── parser.py          # Safe URL parsing logic
-│       ├── features.py        # Static URL indicator extraction
-│       └── scorer.py          # Explainable rule-based risk scoring
+│       ├── __init__.py
+│       ├── parser.py               # parse_url()      — safe URL parsing
+│       ├── features.py             # extract_features() — static indicators
+│       └── scorer.py               # score_url()      — explainable scoring
 ├── tests/
-│   ├── test_parser.py         # Parser unit tests
-│   ├── test_features.py       # Feature extraction unit tests
-│   └── test_scorer.py         # Scoring engine unit tests
-├── data/                      # Sample/reference data
-├── screenshots/               # UI screenshots for the README, added later
-├── docs/                      # Design notes and documentation
-├── requirements.txt           # Python dependencies
-├── pyproject.toml             # Pytest configuration
-├── .env.example               # Example environment variables
+│   ├── __init__.py
+│   ├── test_parser.py
+│   ├── test_features.py
+│   └── test_scorer.py
+├── docs/
+│   └── scoring-rules.md            # Scoring reference
+├── screenshots/                    # Real UI screenshots (add your own)
+├── data/
+├── requirements.txt
+├── pyproject.toml                  # pytest configuration (src layout)
+├── .gitignore
+├── .env.example
+├── LICENSE
 └── README.md
 ```
 
-## Getting started development
+## Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/aditya-barot/phishing-url-risk-analyzer.git
+# Clone
+git clone https://github.com/<your-username>/phishing-url-risk-analyzer.git
 cd phishing-url-risk-analyzer
 
 # Create and activate a virtual environment
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate          # macOS/Linux
+# .venv\Scripts\activate           # Windows (PowerShell)
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Run tests
-pytest
 ```
 
 ## Run the local app
 
 ```bash
-# From the project root, with the virtual environment active
 streamlit run app.py
 ```
 
-Streamlit will open the app in your browser, usually at:
-
-```text
-http://localhost:8501
-```
-
-The app runs locally and does not fetch, visit, resolve, scrape, or externally
-validate the URL being analyzed.
+Streamlit opens the app in your browser (default: http://localhost:8501). Enter
+a URL, click **Analyze URL**, and review the result. The app runs entirely
+locally and makes no outbound network requests.
 
 ## Usage from Python
+
+The package uses a `src/` layout, so put `src/` on your path when importing
+outside of pytest:
+
+```bash
+PYTHONPATH=src python your_script.py
+```
 
 ```python
 from phishing_url_analyzer.scorer import score_url
 
-result = score_url("http://secure-login.example.com/verify-account")
+result = score_url("http://login.secure-verify.example.com@10.0.0.1/account")
 
-print(result["risk_score"])
-print(result["risk_label"])
-print(result["recommendation"])
+print(result["risk_label"])   # "Likely Phishing"
+print(result["risk_score"])   # 94
 
 for indicator in result["triggered_indicators"]:
-    print(indicator["name"], indicator["points"])
-    print(indicator["explanation"])
+    print(f"+{indicator['points']:>3}  {indicator['name']}")
+    print(f"       {indicator['explanation']}")
+
+print(result["recommendation"])
 ```
 
-## Risk labels
+The returned dict also preserves all parsed fields and the nested `features`
+dictionary, so you can inspect the underlying indicators directly.
 
-| Label              | Score range | Meaning |
-| ------------------ | ----------- | ------- |
-| `Invalid URL`      | N/A         | Input could not be parsed as a usable URL or domain |
-| `Low Risk`         | 0–24        | Few or no suspicious URL-based indicators detected |
-| `Suspicious`       | 25–59       | Multiple warning signs detected; user should verify carefully |
-| `Likely Phishing`  | 60–100      | Strong phishing-style indicators detected |
+## Example inputs and outputs
+
+These reflect the current scoring behaviour:
+
+| Example URL | Expected label | Why |
+| --- | --- | --- |
+| `https://www.example.com` | `Low Risk` | No major static warning signs |
+| `http://example.com` | `Low Risk` | Missing HTTPS only (+10) |
+| `http://user@evil.example.com/home` | `Suspicious` | Missing HTTPS + `@` symbol (35) |
+| `http://login.secure-verify.example.com@10.0.0.1/account` | `Likely Phishing` | Multiple strong indicators (94) |
+| `!!!` | `Invalid URL` | Invalid hostname syntax |
+
+## Scoring rules and risk labels
+
+Risk labels are assigned from the capped score:
+
+| Score range | Label |
+| ----------- | ----- |
+| 0–24        | Low Risk |
+| 25–59       | Suspicious |
+| 60–100      | Likely Phishing |
+| —           | Invalid URL (blank or structurally invalid input) |
+
+Indicator weights (each traceable in `scorer.py`):
+
+| Indicator | Points |
+| --------- | ------ |
+| Missing HTTPS | +10 |
+| IP address used as hostname | +25 |
+| localhost / internal-style hostname | +10 |
+| Explicit port | +8 |
+| `@` symbol in URL | +25 |
+| Suspicious keyword | +8 each, capped at +24 |
+| Excessive URL length (> 100) | +15 |
+| Many subdomains (≥ 3) | +15 |
+| Many dots (≥ 5) | +10 |
+| Many hyphens (≥ 4) | +10 |
+| Query string present | +5 |
+| Fragment present | +3 |
+
+The total is **capped at 100**. Invalid or blank input is always reported as
+`Invalid URL` with a score of 0 — never as phishing. See
+[`docs/scoring-rules.md`](docs/scoring-rules.md) for full details.
+
+## Testing
+
+```bash
+pytest
+pytest -W error::DeprecationWarning
+```
+
+Both should report **39 passed**. The second command promotes any
+`DeprecationWarning` to a failure, confirming no deprecated APIs are in use.
 
 ## Roadmap
 
-| Milestone | Goal                                             | Status         |
-| --------- | ------------------------------------------------ | -------------- |
-| 0         | Project setup, structure, and documentation      | ✅ Complete    |
-| 1         | Safe URL parsing into structured components      | ✅ Complete    |
-| 2         | URL feature / indicator extraction               | ✅ Complete    |
-| 3         | Explainable, weighted risk scoring               | ✅ Complete    |
-| 4         | Streamlit UI                                     | ✅ Complete    |
-| 5         | Test suite and documentation polish              | ⏳ Planned     |
+| Milestone | Goal                                             | Status      |
+| --------- | ------------------------------------------------ | ----------- |
+| 0         | Project setup, structure, and documentation      | ✅ Complete |
+| 1         | Safe URL parsing into structured components       | ✅ Complete |
+| 2         | URL feature / indicator extraction                | ✅ Complete |
+| 3         | Explainable, weighted risk scoring                | ✅ Complete |
+| 4         | Streamlit UI                                      | ✅ Complete |
+| 5         | Portfolio polish and documentation                | ✅ Complete |
+
+## Limitations
+
+This is a heuristic, educational tool. Its limitations are important:
+
+- **Static string analysis only.** It never inspects page content, certificates,
+  redirects, DNS records, or reputation data. A URL can look benign here and
+  still be malicious, and vice versa.
+- **Heuristic weights are illustrative,** not empirically tuned against a
+  labelled dataset. Scores indicate relative suspicion, not probability.
+- **Keyword matching is naive** (case-insensitive substring). Legitimate URLs
+  containing words like `login` or `account` will accumulate points and may be
+  flagged as suspicious (false positives).
+- **Some valid uses are penalised** — e.g. explicit ports, IP hosts, or
+  `localhost` are normal in development but treated as risk signals.
+- **No internationalised / homoglyph / punycode analysis,** and the keyword list
+  is English-only.
+- **It cannot confirm safety or maliciousness.** Treat results as guidance to
+  complement, not replace, careful judgement and proper security controls.
 
 ## Disclaimer
 
 This tool is for **educational and defensive** purposes only. It performs static
-analysis of URL strings and does not fetch, visit, resolve, scrape, or interact
-with any URL. It provides heuristic guidance and should not be relied upon as
-the sole basis for security decisions.
-
-A low-risk result does not guarantee that a website is safe. A high-risk result
-does not prove that a website is malicious. The output should be treated as
-URL-based guidance only.
+analysis of URL strings and does not fetch, visit, resolve, or interact with any
+URL or host. It provides heuristic guidance and must not be relied upon as the
+sole basis for security decisions. It is not deployed and is not intended for
+production use.
 
 ## License
 
